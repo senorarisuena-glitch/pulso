@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#16101F"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PULSO"
+            android:textColor="#E5A93C"
+            android:textSize="26sp"
+            android:letterSpacing="0.2" />
+
+        <TextView
+            android:id="@+id/txtEstado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Detenido"
+            android:textColor="#9C8FAE"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnEmpezar"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/fondo_boton"
+                android:text="Empezar"
+                android:textColor="#16101F" />
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="1dp" />
+
+            <Button
+                android:id="@+id/btnTerminar"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/fondo_boton_hueco"
+                android:text="Terminar"
+                android:textColor="#9C8FAE" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Tiempos"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Minutos de enfoque"
+                    android:textColor="#9C8FAE"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/edMin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/fondo_campo"
+                    android:inputType="number"
+                    android:padding="10dp"
+                    android:textColor="#F0E7DC" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Frase cada (min)"
+                    android:textColor="#9C8FAE"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/edAviso"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/fondo_campo"
+                    android:inputType="number"
+                    android:padding="10dp"
+                    android:textColor="#F0E7DC" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/chkSegundo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Contar en voz alta segundo a segundo"
+            android:textColor="#F0E7DC" />
+
+        <CheckBox
+            android:id="@+id/chkDiez"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Decir el tiempo restante cada 10 segundos"
+            android:textColor="#F0E7DC" />
+
+        <CheckBox
+            android:id="@+id/chkVibrar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vibrar en los cambios"
+            android:textColor="#F0E7DC" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Bloques de movimiento"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Rotan uno por ciclo. Una línea por ejercicio: nombre | segundos"
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:id="@+id/listaBloques"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Frases"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Si le pones un audio tuyo, se escucha tu voz en lugar de la del teléfono."
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:id="@+id/listaFrases"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/btnAgregarFrase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/fondo_boton_hueco"
+            android:text="+ Agregar frase"
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Repeticiones de hoy"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/txtDesglose"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Todavía nada hoy."
+            android:textColor="#9C8FAE"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnBorrarHoy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/fondo_boton_hueco"
+            android:text="Reiniciar conteo de hoy"
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Permisos"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/btnBateria"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/fondo_boton_hueco"
+            android:text="Quitar la optimización de batería"
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/fondo_boton"
+            android:text="Guardar cambios"
+            android:textColor="#16101F" />
+    </LinearLayout>
+</ScrollView>

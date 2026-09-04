@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.Pulso" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:colorBackground">#16101F</item>
+        <item name="android:textColor">#F0E7DC</item>
+        <item name="android:textColorHint">#7A6E8A</item>
+        <item name="colorAccent">#E5A93C</item>
+    </style>
+</resources>
