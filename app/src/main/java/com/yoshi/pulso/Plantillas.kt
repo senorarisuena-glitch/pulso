@@ -156,6 +156,24 @@ object Plantillas {
         ),
 
         Paquete(
+            "Jacobo Grinberg",
+            "Sobre cómo pedir: gratitud, desprendimiento y coherencia interna.",
+            listOf(
+                "No pido desde la carencia ni desde la necesidad desesperada, sino desde el reconocimiento de que lo que necesito ya me ha sido concedido. Esto no es autoengaño ni pensamiento mágico: en las dimensiones más sutiles todas las posibilidades ya existen simultáneamente. Pido como quien le recuerda al universo algo que ya había sido acordado.",
+                "No me pierdo en los detalles externos, sino en la firma energética de lo que deseo. El universo responde mucho más a las frecuencias que a las palabras. Cuando pido salud, genero la sensación de vitalidad completa, en lugar de enumerar los síntomas que quiero eliminar.",
+                "Formulo mi petición con intención clara y, de inmediato, la suelto por completo, confiando en que el universo sabe cómo y cuándo manifestarla. Es el equilibrio perfecto entre intención clara y rendición total. Planto la semilla y confío en la tierra y el agua; si la desenterrara cada día para ver si crece, la mataría.",
+                "Me abro a que la respuesta llegue desde cualquier dirección. El universo tiene recursos que mi mente limitada no puede ni imaginar, y una petición desde la conciencia expandida se propaga por múltiples dimensiones. Cuando me aferro a ideas específicas sobre cómo debe llegar, limito severamente las posibilidades.",
+                "Alineo mi petición no solo con mis deseos conscientes, sino con todos mis niveles. Si conscientemente deseo algo pero inconscientemente lo temo, creo un campo de interferencia: es como tener un freno mientras piso el acelerador. Con honestidad brutal identifico y sano las partes que se resisten, y así la potencia de mi petición se multiplica exponencialmente.",
+                "Reconozco que existe un ritmo en la realidad: ciclos de expansión y contracción, momentos de siembra y momentos de cosecha. Desarrollo la sensibilidad para percibir cuándo las corrientes universales fluyen en la dirección de mis intenciones. Remar contra la corriente agota; cuando aprendo a usarlas, el viaje se vuelve infinitamente más fácil.",
+                "Mis peticiones no son demandas. En lugar de decir dame, digo estoy disponible para servir, si sirve al propósito mayor. Así me convierto en cocreador consciente, no en alguien que ruega favores a una fuerza externa, y activo la reciprocidad cósmica: el universo se vuelve tan generoso conmigo como yo con él.",
+                "El universo no me da lo que pido, me da lo que soy. Mi estado de ser es mi petición más poderosa, mucho más que cualquier palabra. Por eso emano ya una frecuencia de confianza y gratitud, y pido no como quien carece, sino como quien ya lo está viviendo y solo permite que se manifieste.",
+                "No pido cosas aisladas, pido la transformación completa de mi vida en la dirección que deseo. En lugar de pedir simplemente dinero, pido una vida de abundancia: financiera, pero también salud, creatividad y propósito que se refuerzan mutuamente. Ya que estoy transformando mi vida, lo hago completamente, y los cambios resultan más duraderos.",
+                "Las peticiones más irresistibles son las que benefician no solo a mí, sino a la red más amplia. Cuando pido desde una motivación de servicio, trasciendo el ego personal y accedo a fuerzas de apoyo, oportunidades y sincronismos reservados para lo que beneficia a otros. No niego mis necesidades: reconozco el vínculo entre mi bien personal y el bienestar del todo.",
+                "No soy un mendigo del universo pidiendo favores: soy una expresión de la conciencia explorando sus propias posibilidades infinitas. La verdadera maestría no está en obtener siempre lo que quiero, sino en querer siempre lo que recibo. Y muchas veces solo estaba esperando recordar cómo pedir."
+            )
+        ),
+
+        Paquete(
             "Motivación y disciplina",
             "Para los días en que no traes ganas de nada.",
             listOf(
