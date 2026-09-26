@@ -9,8 +9,13 @@ object Plantillas {
     data class Rutina(val nombre: String, val descripcion: String, val bloques: List<Bloque>)
     data class Paquete(val nombre: String, val descripcion: String, val frases: List<String>)
 
+    /**
+     * Cinco ejercicios por bloque, 45 segundos cada uno. Con 15 segundos
+     * de descanso automático entre ellos, un bloque completo de cinco
+     * ejercicios llena exactamente los cinco minutos (5 × 60 = 300).
+     */
     private fun b(nombre: String, vararg ejs: String): Bloque =
-        Bloque(nombre, ejs.map { Ejercicio(it, 100) })
+        Bloque(nombre, ejs.map { Ejercicio(it, 45) })
 
     // ------------------------------------------------------------------ rutinas
 
@@ -20,9 +25,9 @@ object Plantillas {
             "Bajar de peso",
             "Cardio corto y constante. Sudas y el corazón se acelera.",
             listOf(
-                b("Bloque 1", "Brincos de tijera", "Rodillas al pecho corriendo", "Sentadillas rápidas"),
-                b("Bloque 2", "Burpees", "Escaladores", "Brincos altos"),
-                b("Bloque 3", "Sombra de boxeo", "Desplantes alternados", "Plancha con toque de hombro")
+                b("Bloque 1", "Brincos de tijera", "Rodillas al pecho corriendo", "Sentadillas rápidas", "Escaladores", "Brincos altos"),
+                b("Bloque 2", "Burpees", "Sombra de boxeo", "Sentadillas con salto", "Desplantes alternados", "Plancha con toque de hombro"),
+                b("Bloque 3", "Trote en el lugar", "Rodillas al pecho corriendo", "Sentadilla sumo con salto", "Burpees", "Escaladores")
             )
         ),
 
@@ -30,9 +35,9 @@ object Plantillas {
             "Ganar músculo",
             "Fuerza con tu propio peso. Movimientos lentos y controlados.",
             listOf(
-                b("Bloque 1", "Lagartijas lentas", "Sentadillas profundas", "Plancha firme"),
-                b("Bloque 2", "Lagartijas diamante", "Desplantes con pausa", "Puente de glúteo a una pierna"),
-                b("Bloque 3", "Lagartija parado de manos", "Sentadilla búlgara en silla", "Fondos de tríceps en silla")
+                b("Bloque 1", "Lagartijas lentas", "Sentadillas profundas", "Plancha firme", "Desplantes con pausa", "Puente de glúteo a una pierna"),
+                b("Bloque 2", "Lagartijas diamante", "Sentadilla búlgara en silla", "Fondos de tríceps en silla", "Plancha con toque de hombro", "Puente de glúteo sostenido"),
+                b("Bloque 3", "Lagartija parado de manos", "Sentadilla isométrica en pared", "Lagartijas con pausa abajo", "Desplante estático por lado", "Plancha con elevación de pierna")
             )
         ),
 
@@ -40,9 +45,9 @@ object Plantillas {
             "Pecho y brazos",
             "Empuje. Todo lo que trabaja pecho, hombro y tríceps.",
             listOf(
-                b("Bloque 1", "Lagartijas normales", "Lagartijas abiertas", "Plancha alta"),
-                b("Bloque 2", "Lagartijas diamante", "Fondos de tríceps en silla", "Lagartijas inclinadas en pared"),
-                b("Bloque 3", "Lagartija parado de manos", "Lagartijas con pausa abajo", "Círculos de brazos sostenidos")
+                b("Bloque 1", "Lagartijas normales", "Lagartijas abiertas", "Plancha alta", "Fondos de tríceps en silla", "Círculos de brazos sostenidos"),
+                b("Bloque 2", "Lagartijas diamante", "Fondos de tríceps en silla", "Lagartijas inclinadas en pared", "Plancha con toque de hombro", "Extensión de brazos al frente"),
+                b("Bloque 3", "Lagartija parado de manos", "Lagartijas con pausa abajo", "Círculos de brazos sostenidos", "Fondos de tríceps lentos", "Plancha alta con desplazamiento")
             )
         ),
 
@@ -50,9 +55,9 @@ object Plantillas {
             "Piernas y glúteos",
             "Tren inferior. Vas a sentirlas al día siguiente.",
             listOf(
-                b("Bloque 1", "Sentadillas", "Desplantes alternados", "Puente de glúteo"),
-                b("Bloque 2", "Sentadilla sumo", "Sentadilla búlgara en silla", "Elevación de talones"),
-                b("Bloque 3", "Saltos de rana", "Sentadilla isométrica en pared", "Patada de glúteo en cuatro puntos")
+                b("Bloque 1", "Sentadillas", "Desplantes alternados", "Puente de glúteo", "Sentadilla sumo", "Elevación de talones"),
+                b("Bloque 2", "Sentadilla búlgara en silla", "Elevación de talones", "Saltos de rana", "Puente de glúteo a una pierna", "Sentadilla isométrica en pared"),
+                b("Bloque 3", "Saltos de rana", "Sentadilla isométrica en pared", "Patada de glúteo en cuatro puntos", "Desplantes caminando", "Puente de glúteo sostenido")
             )
         ),
 
@@ -60,9 +65,9 @@ object Plantillas {
             "Abdomen y core",
             "Centro fuerte. Cuida la espalda baja, no jalones el cuello.",
             listOf(
-                b("Bloque 1", "Abdominales con los pies", "Plancha frontal", "Tijeras acostado"),
-                b("Bloque 2", "Escaladores", "Plancha lateral alternada", "Elevación de piernas"),
-                b("Bloque 3", "Giro ruso sentado", "Hueco abdominal sostenido", "Plancha con toque de hombro")
+                b("Bloque 1", "Abdominales con los pies", "Plancha frontal", "Tijeras acostado", "Elevación de piernas", "Plancha lateral alternada"),
+                b("Bloque 2", "Escaladores", "Plancha lateral alternada", "Elevación de piernas", "Giro ruso sentado", "Hueco abdominal sostenido"),
+                b("Bloque 3", "Giro ruso sentado", "Hueco abdominal sostenido", "Plancha con toque de hombro", "Tijeras acostado", "Escaladores")
             )
         ),
 
@@ -70,9 +75,9 @@ object Plantillas {
             "Oficina sin sudar",
             "Mueve la sangre sin despeinarte. Sirve con camisa puesta.",
             listOf(
-                b("Bloque 1", "Marcha en el lugar", "Rotación de hombros", "Estiramiento de cuello lento"),
-                b("Bloque 2", "Sentadillas a la silla sin peso", "Elevación de talones parado", "Apertura de pecho en marco de puerta"),
-                b("Bloque 3", "Rotación de cadera de pie", "Estiramiento de muñecas y dedos", "Respiración profunda con brazos arriba")
+                b("Bloque 1", "Marcha en el lugar", "Rotación de hombros", "Estiramiento de cuello lento", "Círculos de muñeca", "Respiración profunda con brazos arriba"),
+                b("Bloque 2", "Sentadillas a la silla sin peso", "Elevación de talones parado", "Apertura de pecho en marco de puerta", "Rotación de cadera de pie", "Estiramiento de espalda sentado"),
+                b("Bloque 3", "Rotación de cadera de pie", "Estiramiento de muñecas y dedos", "Marcha en el lugar", "Elevación de talones parado", "Respiración profunda con brazos arriba")
             )
         ),
 
@@ -80,9 +85,9 @@ object Plantillas {
             "Espalda y postura",
             "Para el que pasa el día sentado. Abre lo que la silla cierra.",
             listOf(
-                b("Bloque 1", "Gato y vaca en cuatro puntos", "Superman acostado", "Retracción de escápulas"),
-                b("Bloque 2", "Estiramiento de psoas en desplante", "Plancha frontal", "Apertura de pecho en pared"),
-                b("Bloque 3", "Rotación de columna sentado", "Puente de glúteo", "Colgarse o estirarse hacia arriba")
+                b("Bloque 1", "Gato y vaca en cuatro puntos", "Superman acostado", "Retracción de escápulas", "Apertura de pecho en pared", "Estiramiento de psoas en desplante"),
+                b("Bloque 2", "Estiramiento de psoas en desplante", "Plancha frontal", "Apertura de pecho en pared", "Superman acostado", "Retracción de escápulas"),
+                b("Bloque 3", "Rotación de columna sentado", "Puente de glúteo", "Colgarse o estirarse hacia arriba", "Gato y vaca en cuatro puntos", "Apertura de pecho en pared")
             )
         ),
 
@@ -90,9 +95,9 @@ object Plantillas {
             "Energía rápida",
             "Despierta el cuerpo en segundos. Ideal para la mañana.",
             listOf(
-                b("Bloque 1", "Brincos de tijera", "Sacudida de brazos y piernas", "Respiración rápida de pie"),
-                b("Bloque 2", "Rodillas al pecho corriendo", "Sentadillas con impulso", "Golpes al aire"),
-                b("Bloque 3", "Brincos altos", "Escaladores", "Estiramiento largo hacia el techo")
+                b("Bloque 1", "Brincos de tijera", "Sacudida de brazos y piernas", "Respiración rápida de pie", "Rodillas al pecho corriendo", "Golpes al aire"),
+                b("Bloque 2", "Rodillas al pecho corriendo", "Sentadillas con impulso", "Golpes al aire", "Brincos de tijera", "Sacudida de brazos y piernas"),
+                b("Bloque 3", "Brincos altos", "Escaladores", "Estiramiento largo hacia el techo", "Sombra de boxeo", "Respiración rápida de pie")
             )
         ),
 
@@ -100,9 +105,9 @@ object Plantillas {
             "Movilidad y flexibilidad",
             "Articulaciones sueltas. Nada de fuerza, todo rango.",
             listOf(
-                b("Bloque 1", "Círculos de cadera", "Círculos de hombro", "Rotación de tobillos"),
-                b("Bloque 2", "Sentadilla profunda sostenida", "Estiramiento de isquiotibiales", "Postura del niño"),
-                b("Bloque 3", "Desplante con rotación", "Puente suave de espalda", "Estiramiento de cuádriceps de pie")
+                b("Bloque 1", "Círculos de cadera", "Círculos de hombro", "Rotación de tobillos", "Rotación de columna sentado", "Postura del niño"),
+                b("Bloque 2", "Sentadilla profunda sostenida", "Estiramiento de isquiotibiales", "Postura del niño", "Círculos de cadera", "Rotación de tobillos"),
+                b("Bloque 3", "Desplante con rotación", "Puente suave de espalda", "Estiramiento de cuádriceps de pie", "Círculos de hombro", "Sentadilla profunda sostenida")
             )
         ),
 
@@ -110,9 +115,9 @@ object Plantillas {
             "Resistencia",
             "Aguante. Bloques largos, ritmo constante, sin parar.",
             listOf(
-                b("Bloque 1", "Trote en el lugar", "Sentadillas continuas", "Plancha sostenida"),
-                b("Bloque 2", "Burpees a ritmo lento", "Escaladores continuos", "Desplantes caminando"),
-                b("Bloque 3", "Brincos de tijera", "Sombra de boxeo", "Sentadilla isométrica en pared")
+                b("Bloque 1", "Trote en el lugar", "Sentadillas continuas", "Plancha sostenida", "Escaladores continuos", "Desplantes caminando"),
+                b("Bloque 2", "Burpees a ritmo lento", "Escaladores continuos", "Desplantes caminando", "Trote en el lugar", "Sentadillas continuas"),
+                b("Bloque 3", "Brincos de tijera", "Sombra de boxeo", "Sentadilla isométrica en pared", "Burpees a ritmo lento", "Plancha sostenida")
             )
         )
     )

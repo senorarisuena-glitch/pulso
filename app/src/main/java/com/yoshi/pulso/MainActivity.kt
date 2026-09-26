@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtEstado: TextView
     private lateinit var txtDesglose: TextView
     private lateinit var edAviso: EditText
+    private lateinit var edDescanso: EditText
     private lateinit var chkSegundo: CheckBox
     private lateinit var chkDiez: CheckBox
     private lateinit var chkVibrar: CheckBox
@@ -80,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         txtEstado = findViewById(R.id.txtEstado)
         txtDesglose = findViewById(R.id.txtDesglose)
         edAviso = findViewById(R.id.edAviso)
+        edDescanso = findViewById(R.id.edDescanso)
         chkSegundo = findViewById(R.id.chkSegundo)
         chkDiez = findViewById(R.id.chkDiez)
         chkVibrar = findViewById(R.id.chkVibrar)
@@ -172,6 +174,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun cargarPerfil() {
         edAviso.setText(Config.avisoFrases(this).toString())
+        edDescanso.setText(Config.descansoSeg(this).toString())
         chkSegundo.isChecked = Config.cuentaSegundo(this)
         chkDiez.isChecked = Config.avisoDiez(this)
         chkVibrar.isChecked = Config.vibrar(this)
@@ -474,12 +477,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun guardar(conAviso: Boolean) {
         val av = edAviso.text.toString().toIntOrNull() ?: 4
+        val desc = edDescanso.text.toString().toIntOrNull() ?: Config.DESCANSO_DEFECTO
         Config.guardarNumeros(
             this,
             if (av > 0) av else 4,
             chkSegundo.isChecked,
             chkDiez.isChecked,
-            chkVibrar.isChecked
+            chkVibrar.isChecked,
+            if (desc >= 0) desc else Config.DESCANSO_DEFECTO
         )
 
         val originales = Config.bloques(this)

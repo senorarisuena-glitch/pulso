@@ -21,6 +21,9 @@ object Config {
     /** El ciclo es fijo: 25 minutos de enfoque, 5 de movimiento. */
     const val MINUTOS_ENFOQUE = 25
 
+    /** Descanso por defecto entre ejercicios, en segundos. */
+    const val DESCANSO_DEFECTO = 15
+
     fun p(c: Context): SharedPreferences = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     // ================================================================ perfiles
@@ -110,7 +113,7 @@ object Config {
         val lista = perfiles(c)
         if (lista.size <= 1) return false
         val ed = p(c).edit()
-        for (clave in listOf("bloques", "frases", "avisoFrases", "cuentaSegundo", "avisoDiez", "vibrar")) {
+        for (clave in listOf("bloques", "frases", "avisoFrases", "cuentaSegundo", "avisoDiez", "vibrar", "descansoSeg")) {
             ed.remove(id + "__" + clave)
         }
         ed.apply()
@@ -128,38 +131,51 @@ object Config {
     fun cuentaSegundo(c: Context) = p(c).getBoolean(k(c, "cuentaSegundo"), true)
     fun avisoDiez(c: Context) = p(c).getBoolean(k(c, "avisoDiez"), true)
     fun vibrar(c: Context) = p(c).getBoolean(k(c, "vibrar"), true)
+    fun descansoSeg(c: Context) = p(c).getInt(k(c, "descansoSeg"), DESCANSO_DEFECTO)
 
-    fun guardarNumeros(c: Context, aviso: Int, seg: Boolean, diez: Boolean, vib: Boolean) {
+    fun guardarNumeros(c: Context, aviso: Int, seg: Boolean, diez: Boolean, vib: Boolean, descanso: Int) {
         p(c).edit()
             .putInt(k(c, "avisoFrases"), if (aviso > 0) aviso else 4)
             .putBoolean(k(c, "cuentaSegundo"), seg)
             .putBoolean(k(c, "avisoDiez"), diez)
             .putBoolean(k(c, "vibrar"), vib)
+            .putInt(k(c, "descansoSeg"), if (descanso >= 0) descanso else DESCANSO_DEFECTO)
             .apply()
     }
 
     // ================================================================ bloques
 
+    /**
+     * Cinco ejercicios por bloque, 45 segundos cada uno por defecto.
+     * Con 15 segundos de descanso entre ellos, cinco ejercicios de 45
+     * llenan exactamente los cinco minutos del bloque (5 × 60 = 300).
+     */
     private fun bloquesPorDefecto(): List<Bloque> = listOf(
         Bloque(
             "Bloque 1", listOf(
-                Ejercicio("Sentadillas", 100),
-                Ejercicio("Lagartijas", 100),
-                Ejercicio("Plancha y estiramiento de cadera", 100)
+                Ejercicio("Sentadillas", 45),
+                Ejercicio("Lagartijas", 45),
+                Ejercicio("Plancha", 45),
+                Ejercicio("Desplantes alternados", 45),
+                Ejercicio("Estiramiento de cadera", 45)
             )
         ),
         Bloque(
             "Bloque 2", listOf(
-                Ejercicio("Burpees", 100),
-                Ejercicio("Brincos altos", 100),
-                Ejercicio("Posición de caballo", 100)
+                Ejercicio("Burpees", 45),
+                Ejercicio("Brincos altos", 45),
+                Ejercicio("Posición de caballo", 45),
+                Ejercicio("Escaladores", 45),
+                Ejercicio("Sombra de boxeo", 45)
             )
         ),
         Bloque(
             "Bloque 3", listOf(
-                Ejercicio("Lagartija parado de manos", 100),
-                Ejercicio("Saltos de rana", 100),
-                Ejercicio("Abdominales con los pies", 100)
+                Ejercicio("Lagartija parado de manos", 45),
+                Ejercicio("Saltos de rana", 45),
+                Ejercicio("Abdominales con los pies", 45),
+                Ejercicio("Giro ruso sentado", 45),
+                Ejercicio("Plancha lateral alternada", 45)
             )
         )
     )
@@ -213,22 +229,22 @@ object Config {
             .map { linea ->
                 val partes = linea.split("|")
                 val n = if (partes[0].trim().isEmpty()) "Movimiento" else partes[0].trim()
-                val s = if (partes.size > 1) partes[1].trim().toIntOrNull() ?: 100 else 100
-                Ejercicio(n, if (s > 0) s else 100)
+                val s = if (partes.size > 1) partes[1].trim().toIntOrNull() ?: 45 else 45
+                Ejercicio(n, if (s > 0) s else 45)
             }
-        return Bloque(nombre, if (ejs.isEmpty()) listOf(Ejercicio("Movimiento", 100)) else ejs)
+        return Bloque(nombre, if (ejs.isEmpty()) listOf(Ejercicio("Movimiento", 45)) else ejs)
     }
 
     // ================================================================ frases
 
     private fun frasesPorDefecto(): List<Frase> = listOf(
-        "Respira, concéntrate, recuerda quién eres y a dónde vas. Eres un victor, la victoria está en ti. Eres un vencedor.",
-        "Agradece, conecta tu ser superior. 1, 1, 9, 8, 1. Dios habita en ti.",
-        "Yo soy la fuente en completa expresión, lo integro, lo comparto, libero todo límite, manifiesto la realidad perfecta aquí y ahora.",
-        "Tu percepción cambia tu realidad. Cambia cómo estás percibiendo las cosas a positivo. Tu mente es un proyector. Tu desafío es ser millonario, estar presente y disfrutar de una hermosa familia. Los problemas y obstáculos son una oportunidad.",
-        "Yo soy las riquezas de Dios fluyendo a mis manos y uso, que nada ni nadie puede detener.",
-        "Estás creando una nueva identidad. Obsérvala, obsérvala. Agradécele, agradécele.",
-        "Ángeles y guías, les doy permiso de asistirme en todas las áreas de mi vida. Límpienme y protéjanme de toda negatividad.",
+        "Respira. Concéntrate. Recuerda quién eres y a dónde vas. Eres un victor, y la victoria está dentro de ti, no allá afuera esperándote. Eres un vencedor. No porque nunca te caigas, sino porque siempre te vuelves a levantar.",
+        "Agradece. Conecta con tu ser superior. 1, 1, 9, 8, 1. Dios habita en ti, en tu respiración, en tus manos, en lo que estás construyendo justo ahora. No estás solo en esto y nunca lo has estado.",
+        "Yo soy la fuente en completa expresión. Lo integro, lo comparto, libero todo límite. Manifiesto la realidad perfecta aquí y ahora, en este momento, en este cuerpo, en esta vida que estoy eligiendo.",
+        "Tu percepción cambia tu realidad. Cambia cómo estás percibiendo las cosas hacia lo positivo, porque tu mente es un proyector y afuera solo ves lo que traes adentro. Tu desafío es ser millonario, estar presente y disfrutar de una hermosa familia. Los problemas y los obstáculos no son castigos, son oportunidades disfrazadas.",
+        "Yo soy las riquezas de Dios fluyendo a mis manos y a mi uso, que nada ni nadie puede detener. Lo que es mío llega a tiempo, por el camino correcto, y llega para quedarse.",
+        "Estás creando una nueva identidad. Obsérvala. Obsérvala con calma, sin exigirle que ya esté terminada. Agradécele. Agradécele por aparecer, aunque todavía sea frágil, aunque a ratos se te olvide. Ya empezó.",
+        "Ángeles y guías, les doy permiso de asistirme en todas las áreas de mi vida. Límpienme y protéjanme de toda negatividad, la de afuera y la que yo mismo me genero. Acompáñenme hoy, en lo grande y en lo pequeño.",
         "5, 2, 0. 7, 4, 1, 8."
     ).mapIndexed { i, t -> Frase("f" + (i + 1), t, null) }
 

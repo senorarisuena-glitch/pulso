@@ -56,11 +56,13 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
     private var ciclo = 1
     private var idxFrase = 0
     private var ultimoSeg = -1
+    private var ultimoEstadoSeg = -1
     private var idxEj = 0
+    private var enDescanso = false
     private var repsEj = 0
+    private var descansoActual = Config.DESCANSO_DEFECTO
     private val marcasDichas = HashSet<Int>()
     private var descartado = false
-    private var ultimoEstadoSeg = -1
     private var restaAlPausar = 0.0
 
     private lateinit var nm: NotificationManager
@@ -81,7 +83,6 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
             if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
                 t.setLanguage(Locale("es", "ES"))
             }
-            // guía de navegación: se oye aunque haya música o una llamada en curso
             t.setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
@@ -145,91 +146,159 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
         fase = nueva
         inicioFase = SystemClock.elapsedRealtime()
         ultimoSeg = -1
+        ultimoEstadoSeg = -1
         marcasDichas.clear()
         descartado = false
         if (fase == "enfoque") {
             duracionFase = Config.minEnfoque(this) * 60
             nm.cancel(NOTIF_AVISO)
         } else {
+            descansoActual = Config.descansoSeg(this)
             val b = bloqueDelCiclo()
-            duracionFase = b.ejs.sumOf { it.seg }
+            duracionFase = duracionDelBloque(b)
             idxEj = 0
+            enDescanso = false
             repsEj = 0
             vibrar(longArrayOf(0, 120, 80, 120))
-            hablar("Arranca. " + b.ejs[0].nombre)
-            avisoEjercicio(b.ejs[0].nombre, if (b.ejs.size > 1) b.ejs[1].nombre else null, duracionFase, true)
+            val primero = b.ejs[0]
+            hablar("Arranca. " + primero.nombre)
+            avisoEjercicio(primero.nombre, siguienteNombre(b, 0), primero.seg, true)
         }
         actualizarEstado()
     }
 
+    private fun duracionDelBloque(b: Bloque): Int =
+        b.ejs.sumOf { it.seg } + b.ejs.size * descansoActual
+
+    private fun siguienteNombre(b: Bloque, i: Int): String? =
+        if (i + 1 < b.ejs.size) b.ejs[i + 1].nombre else null
+
     private fun tick() {
         val t = (SystemClock.elapsedRealtime() - inicioFase) / 1000.0
         val resta = (duracionFase - t).coerceAtLeast(0.0)
-        val seg = Math.ceil(resta).toInt()
 
         if (fase == "enfoque") {
-            val paso = Config.avisoFrases(this) * 60
-            val marca = (t / paso).toInt()
-            if (marca >= 1 && t < duracionFase - 60 && !marcasDichas.contains(marca)) {
-                marcasDichas.add(marca)
-                lanzarFrase()
-            }
-
-            if (resta <= 60) {
-                if (seg != ultimoSeg) {
-                    ultimoSeg = seg
-                    if (seg == 60) {
-                        descartado = false
-                        callar()
-                        hablar("Un minuto. Prepárate.")
-                        vibrar(longArrayOf(0, 200))
-                    } else if (Config.cuentaSegundo(this) && seg in 1..59) {
-                        hablar(seg.toString())
-                    } else if (!Config.cuentaSegundo(this) && (seg == 30 || seg == 10 || seg <= 5)) {
-                        hablar(seg.toString())
-                    }
-                    avisoCuenta(seg, seg == 60)
-                }
-            }
-
-            if (resta <= 0.0) {
-                iniciarFase("mover")
-                return
-            }
+            tickEnfoque(t, resta)
         } else {
-            val ejs = bloqueDelCiclo().ejs
-            var acc = 0
-            var i = ejs.size - 1
-            for (k in ejs.indices) {
-                acc += ejs[k].seg
-                if (t < acc) { i = k; break }
-            }
-            if (i != idxEj) {
-                idxEj = i
-                repsEj = 0
-                descartado = false
-                callar()
-                hablar("Cambio. " + ejs[i].nombre)
-                vibrar(longArrayOf(0, 90))
-                avisoEjercicio(ejs[i].nombre, if (i + 1 < ejs.size) ejs[i + 1].nombre else null, seg, true)
-            }
+            tickMover(t, resta)
+        }
+    }
+
+    private fun tickEnfoque(t: Double, resta: Double) {
+        val seg = Math.ceil(resta).toInt()
+        val paso = Config.avisoFrases(this) * 60
+        val marca = (t / paso).toInt()
+        if (marca >= 1 && t < duracionFase - 60 && !marcasDichas.contains(marca)) {
+            marcasDichas.add(marca)
+            lanzarFrase()
+        }
+
+        if (resta <= 60) {
             if (seg != ultimoSeg) {
                 ultimoSeg = seg
-                if (Config.avisoDiez(this) && seg % 10 == 0 && seg > 0 && seg < duracionFase) {
-                    hablar(tiempoEnPalabras(seg))
+                if (seg == 60) {
+                    descartado = false
+                    callar()
+                    hablar("Un minuto. Prepárate.")
+                    vibrar(longArrayOf(0, 200))
+                } else if (Config.cuentaSegundo(this) && seg in 1..59) {
+                    hablar(seg.toString())
+                } else if (!Config.cuentaSegundo(this) && (seg == 30 || seg == 10 || seg <= 5)) {
+                    hablar(seg.toString())
                 }
-                avisoEjercicio(ejs[i].nombre, if (i + 1 < ejs.size) ejs[i + 1].nombre else null, seg, false)
-            }
-
-            if (resta <= 0.0) {
-                ciclo++
-                callar()
-                hablar("Muy bien. Vuelve al trabajo.")
-                iniciarFase("enfoque")
-                return
+                avisoCuenta(seg)
             }
         }
+
+        if (resta <= 0.0) {
+            iniciarFase("mover")
+            return
+        }
         if (seg != ultimoEstadoSeg) { ultimoEstadoSeg = seg; actualizarEstado() }
+    }
+
+    /**
+     * El bloque de movimiento se recorre como una franja de tiempo:
+     * ejercicio 1 (trabajo) → descanso → ejercicio 2 (trabajo) → descanso → ...
+     * t es el tiempo transcurrido desde que empezó el bloque completo.
+     */
+    private fun tickMover(t: Double, resta: Double) {
+        if (resta <= 0.0) {
+            ciclo++
+            callar()
+            hablar("Muy bien. Vuelve al trabajo.")
+            iniciarFase("enfoque")
+            return
+        }
+
+        val b = bloqueDelCiclo()
+        var acc = 0.0
+        var encontrado = false
+
+        for (i in b.ejs.indices) {
+            val finTrabajo = acc + b.ejs[i].seg
+            val finDescanso = finTrabajo + descansoActual
+
+            if (t < finTrabajo) {
+                procesarSegmento(b, i, false, finTrabajo - t)
+                encontrado = true
+                break
+            }
+            if (t < finDescanso) {
+                procesarSegmento(b, i, true, finDescanso - t)
+                encontrado = true
+                break
+            }
+            acc = finDescanso
+        }
+
+        if (!encontrado) {
+            // Redondeo al filo del bloque: trátalo como el último descanso.
+            val ultimo = b.ejs.size - 1
+            procesarSegmento(b, ultimo, true, 0.0)
+        }
+
+        val segEstado = Math.ceil(resta).toInt()
+        if (segEstado != ultimoEstadoSeg) { ultimoEstadoSeg = segEstado; actualizarEstado() }
+    }
+
+    private fun procesarSegmento(b: Bloque, i: Int, descanso: Boolean, restanteSegmento: Double) {
+        val segRestante = Math.ceil(restanteSegmento).toInt()
+        val cambioDeSegmento = (i != idxEj) || (descanso != enDescanso)
+
+        if (cambioDeSegmento) {
+            idxEj = i
+            enDescanso = descanso
+            ultimoSeg = -1
+            descartado = false
+            callar()
+            if (descanso) {
+                repsEj = 0
+                val sig = siguienteNombre(b, i)
+                vibrar(longArrayOf(0, 70))
+                if (sig != null) {
+                    hablar("Descanso. Sigue: " + sig)
+                } else {
+                    hablar("Descanso. Ya casi terminas.")
+                }
+                avisoDescanso(siguienteNombre(b, i), segRestante, true)
+            } else {
+                vibrar(longArrayOf(0, 90))
+                hablar("Cambio. " + b.ejs[i].nombre)
+                avisoEjercicio(b.ejs[i].nombre, siguienteNombre(b, i), segRestante, true)
+            }
+        } else if (segRestante != ultimoSeg) {
+            ultimoSeg = segRestante
+            if (descanso) {
+                if (segRestante in 1..3) vibrar(longArrayOf(0, 20))
+                avisoDescanso(siguienteNombre(b, i), segRestante, false)
+            } else {
+                if (Config.avisoDiez(this) && segRestante % 10 == 0 && segRestante > 0 && segRestante < b.ejs[i].seg) {
+                    hablar(tiempoEnPalabras(segRestante))
+                }
+                avisoEjercicio(b.ejs[i].nombre, siguienteNombre(b, i), segRestante, false)
+            }
+        }
     }
 
     private fun bloqueDelCiclo(): Bloque {
@@ -260,17 +329,19 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun sumarRepeticion() {
-        if (fase != "mover") return
+        if (fase != "mover" || enDescanso) return
         val ejs = bloqueDelCiclo().ejs
         val nombre = ejs[idxEj.coerceIn(0, ejs.size - 1)].nombre
         repsEj++
         Config.sumarRep(this, nombre, 1)
         vibrar(longArrayOf(0, 25))
-        val t = (SystemClock.elapsedRealtime() - inicioFase) / 1000.0
-        val seg = Math.ceil((duracionFase - t).coerceAtLeast(0.0)).toInt()
         descartado = false
-        avisoEjercicio(nombre, if (idxEj + 1 < ejs.size) ejs[idxEj + 1].nombre else null, seg, false)
+        val t = (SystemClock.elapsedRealtime() - inicioFase) / 1000.0
+        val resta = (duracionFase - t).coerceAtLeast(0.0)
         actualizarEstado()
+        // fuerza refresco inmediato de la notificación con el nuevo conteo
+        ultimoSeg = -1
+        tick()
     }
 
     private fun descartarAviso() {
@@ -406,7 +477,7 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
             estado.description = "Aviso permanente mientras Pulso corre"
 
             val aviso = NotificationChannel(CH_AVISO, "Frases y ejercicios", NotificationManager.IMPORTANCE_HIGH)
-            aviso.description = "Frases, cuenta regresiva y ejercicios"
+            aviso.description = "Frases, cuenta regresiva, ejercicios y descansos"
             aviso.enableVibration(false)
             aviso.setSound(null, null)
 
@@ -458,9 +529,10 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
                 if (seg <= 60) "Prepárate · $seg" else "Enfoque · " + mmss(seg)
             } else {
                 val ejs = bloqueDelCiclo().ejs
-                ejs[idxEj.coerceIn(0, ejs.size - 1)].nombre + " · " + mmss(seg)
+                val nombre = ejs[idxEj.coerceIn(0, ejs.size - 1)].nombre
+                if (enDescanso) "Descanso · " + mmss(seg) else nombre + " · " + mmss(seg)
             }
-            texto = "Ciclo $ciclo · " + bloqueDelCiclo().nombre + " · " + Config.totalHoy(this) + " reps hoy"
+            texto = Config.nombrePerfilActual(this) + " · ciclo $ciclo · " + Config.totalHoy(this) + " reps hoy"
         }
         resumen = titulo
 
@@ -506,12 +578,11 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
         try { nm.notify(NOTIF_AVISO, n) } catch (e: Exception) { }
     }
 
-    private fun avisoCuenta(seg: Int, alertar: Boolean) {
+    private fun avisoCuenta(seg: Int) {
         if (descartado) return
-        val n = baseAviso(alertar)
+        val n = baseAviso(seg == 60)
             .setContentTitle(seg.toString())
             .setContentText("Prepárate · " + bloqueDelCiclo().nombre)
-            .setUsesChronometer(false)
             .addAction(0, "Callar", piServicio(ACTION_DESCARTAR, 22))
             .build()
         try { nm.notify(NOTIF_AVISO, n) } catch (e: Exception) { }
@@ -520,13 +591,25 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
     private fun avisoEjercicio(nombre: String, siguiente: String?, seg: Int, alertar: Boolean) {
         if (descartado) return
         val detalle = mmss(seg) + " · " + repsEj + " reps" +
-                (if (siguiente != null) " · sigue: $siguiente" else " · último")
+                (if (siguiente != null) " · descanso, luego: $siguiente" else " · último de este bloque")
         val n = baseAviso(alertar)
             .setContentTitle(nombre)
             .setContentText(detalle)
             .addAction(0, "+1 rep", piServicio(ACTION_REP, 23))
             .addAction(0, "Saltar", piServicio(ACTION_SALTAR, 24))
             .addAction(0, "Callar", piServicio(ACTION_DESCARTAR, 25))
+            .build()
+        try { nm.notify(NOTIF_AVISO, n) } catch (e: Exception) { }
+    }
+
+    private fun avisoDescanso(siguienteNombre: String?, seg: Int, alertar: Boolean) {
+        if (descartado) return
+        val texto = if (siguienteNombre != null) "Sigue: $siguienteNombre" else "Último ejercicio del bloque"
+        val n = baseAviso(alertar)
+            .setContentTitle("Descanso · " + seg)
+            .setContentText(texto)
+            .addAction(0, "Saltar", piServicio(ACTION_SALTAR, 26))
+            .addAction(0, "Callar", piServicio(ACTION_DESCARTAR, 27))
             .build()
         try { nm.notify(NOTIF_AVISO, n) } catch (e: Exception) { }
     }
