@@ -218,6 +218,42 @@
             android:text="Vibrar en los cambios"
             android:textColor="#F0E7DC" />
 
+        <!-- ============ voz ============ -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Voz"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Elige con cuál de las voces en español quieres que hable Pulso. Salen primero las latinoamericanas. Cuántas aparezcan depende de tu teléfono; algunas dicen &quot;necesita internet&quot; porque son de Google en la nube. Es distinto por cada perfil."
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/txtVoz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Voz actual: automática"
+            android:textColor="#F0E7DC"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnVoz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/fondo_boton_hueco"
+            android:text="Elegir voz"
+            android:textColor="#58C0A0"
+            android:textSize="12sp" />
+
         <!-- ============ bloques ============ -->
 
         <TextView
@@ -231,7 +267,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Rotan uno por ciclo. Cinco líneas, una por ejercicio: nombre | segundos de trabajo. Entre cada uno se mete el descanso que pusiste arriba, y la app te avisa cuál sigue mientras descansas."
+            android:text="Rotan uno por ciclo. Cinco líneas, una por ejercicio: nombre | segundos de trabajo | cómo se hace (opcional). Entre cada uno se mete el descanso que pusiste arriba, y la app dice en voz alta cuál sigue y cómo se hace mientras descansas. Si conoce el ejercicio, ya sabe cómo explicarlo aunque dejes ese último dato vacío."
             android:textColor="#9C8FAE"
             android:textSize="12sp" />
 
