@@ -90,7 +90,19 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
                     .build()
             )
             ttsListo = true
+            aplicarVoz()
         }
+    }
+
+    /** Si el perfil actual eligió una voz específica, la usa. Si no, se queda con la del idioma. */
+    private fun aplicarVoz() {
+        val t = tts ?: return
+        if (!ttsListo) return
+        val guardada = Config.vozElegida(this) ?: return
+        try {
+            val v = t.voices?.firstOrNull { it.name == guardada }
+            if (v != null) t.voice = v
+        } catch (e: Exception) { }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -130,6 +142,7 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
         ciclo = 1
         idxFrase = 0
         pedirWakeLock()
+        aplicarVoz()
         hablar("Empezamos.")
         iniciarFase("enfoque")
         reloj.post(latido)
@@ -161,7 +174,10 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
             repsEj = 0
             vibrar(longArrayOf(0, 120, 80, 120))
             val primero = b.ejs[0]
-            hablar("Arranca. " + primero.nombre)
+            val introPrimero = if (primero.explicacion.isNotBlank())
+                "Arranca. " + primero.nombre + ". " + primero.explicacion
+            else "Arranca. " + primero.nombre
+            hablar(introPrimero)
             avisoEjercicio(primero.nombre, siguienteNombre(b, 0), primero.seg, true)
         }
         actualizarEstado()
@@ -172,6 +188,9 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
 
     private fun siguienteNombre(b: Bloque, i: Int): String? =
         if (i + 1 < b.ejs.size) b.ejs[i + 1].nombre else null
+
+    private fun siguienteExplicacion(b: Bloque, i: Int): String? =
+        if (i + 1 < b.ejs.size) b.ejs[i + 1].explicacion.ifBlank { null } else null
 
     private fun tick() {
         val t = (SystemClock.elapsedRealtime() - inicioFase) / 1000.0
@@ -275,13 +294,14 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
             if (descanso) {
                 repsEj = 0
                 val sig = siguienteNombre(b, i)
+                val sigExp = siguienteExplicacion(b, i)
                 vibrar(longArrayOf(0, 70))
                 if (sig != null) {
-                    hablar("Descanso. Sigue: " + sig)
+                    hablar("Descanso. Sigue: " + sig + (if (sigExp != null) ". " + sigExp else ""))
                 } else {
                     hablar("Descanso. Ya casi terminas.")
                 }
-                avisoDescanso(siguienteNombre(b, i), segRestante, true)
+                avisoDescanso(siguienteNombre(b, i), siguienteExplicacion(b, i), segRestante, true)
             } else {
                 vibrar(longArrayOf(0, 90))
                 hablar("Cambio. " + b.ejs[i].nombre)
@@ -291,7 +311,7 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
             ultimoSeg = segRestante
             if (descanso) {
                 if (segRestante in 1..3) vibrar(longArrayOf(0, 20))
-                avisoDescanso(siguienteNombre(b, i), segRestante, false)
+                avisoDescanso(siguienteNombre(b, i), siguienteExplicacion(b, i), segRestante, false)
             } else {
                 if (Config.avisoDiez(this) && segRestante % 10 == 0 && segRestante > 0 && segRestante < b.ejs[i].seg) {
                     hablar(tiempoEnPalabras(segRestante))
@@ -602,12 +622,15 @@ class PulsoService : Service(), TextToSpeech.OnInitListener {
         try { nm.notify(NOTIF_AVISO, n) } catch (e: Exception) { }
     }
 
-    private fun avisoDescanso(siguienteNombre: String?, seg: Int, alertar: Boolean) {
+    private fun avisoDescanso(siguienteNombre: String?, siguienteExplicacion: String?, seg: Int, alertar: Boolean) {
         if (descartado) return
-        val texto = if (siguienteNombre != null) "Sigue: $siguienteNombre" else "Último ejercicio del bloque"
+        val texto = if (siguienteNombre != null) {
+            "Sigue: $siguienteNombre" + (if (!siguienteExplicacion.isNullOrBlank()) ". $siguienteExplicacion" else "")
+        } else "Último ejercicio del bloque"
         val n = baseAviso(alertar)
             .setContentTitle("Descanso · " + seg)
             .setContentText(texto)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(texto))
             .addAction(0, "Saltar", piServicio(ACTION_SALTAR, 26))
             .addAction(0, "Callar", piServicio(ACTION_DESCARTAR, 27))
             .build()

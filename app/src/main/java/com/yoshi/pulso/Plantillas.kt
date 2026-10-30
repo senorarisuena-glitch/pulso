@@ -15,7 +15,109 @@ object Plantillas {
      * ejercicios llena exactamente los cinco minutos (5 × 60 = 300).
      */
     private fun b(nombre: String, vararg ejs: String): Bloque =
-        Bloque(nombre, ejs.map { Ejercicio(it, 45) })
+        Bloque(nombre, ejs.map { Ejercicio(it, 45, explicacionDe(it)) })
+
+    // ------------------------------------------------------------------ explicaciones
+
+    /**
+     * Cómo se hace cada ejercicio, en una frase corta que la app dice en
+     * voz alta antes de que empiece (durante el descanso previo, o al
+     * arrancar si es el primero del bloque). Se busca por nombre, sin
+     * importar mayúsculas ni espacios de sobra. Si un ejercicio no está
+     * aquí, la app simplemente dice su nombre, sin explicación.
+     */
+    private val explicaciones: Map<String, String> = mapOf(
+        "abdominales con los pies" to "Acostado, pies apoyados y rodillas dobladas, sube el torso hacia las rodillas sin jalar el cuello.",
+        "apertura de pecho en marco de puerta" to "Antebrazos en el marco de una puerta, da un paso al frente y deja que el pecho se abra.",
+        "apertura de pecho en pared" to "De espaldas a una pared, abre los brazos a los lados y empuja el pecho hacia adelante.",
+        "brincos altos" to "Desde sentadilla, salta lo más alto que puedas y aterriza suave doblando las rodillas.",
+        "brincos de tijera" to "Salta abriendo brazos y piernas a la vez, y ciérralos al aterrizar.",
+        "burpees" to "Baja a sentadilla, manos al piso, avienta los pies atrás en plancha, regresa y salta arriba.",
+        "burpees a ritmo lento" to "El mismo burpee, pero controlado: sin prisa, cuidando cada paso del movimiento.",
+        "colgarse o estirarse hacia arriba" to "Estira los brazos hacia arriba lo más que puedas, como si te fueras a colgar de algo.",
+        "círculos de brazos sostenidos" to "Brazos extendidos a los lados, haz círculos pequeños y constantes sin bajarlos.",
+        "círculos de cadera" to "De pie, manos en la cintura, gira la cadera en círculos amplios, mitad para cada lado.",
+        "círculos de hombro" to "Brazos relajados, haz círculos con los hombros hacia atrás y luego hacia adelante.",
+        "círculos de muñeca" to "Extiende los brazos y gira las muñecas en círculos, hacia un lado y luego al otro.",
+        "desplante con rotación" to "Da un paso al frente en desplante y gira el torso hacia la pierna de enfrente.",
+        "desplante estático por lado" to "Un pie muy adelante y otro atrás, bajas y subes sin cambiar de pierna.",
+        "desplantes alternados" to "Paso al frente, bajas hasta que ambas rodillas hagan noventa grados, alternando pierna.",
+        "desplantes caminando" to "Ve caminando hacia adelante alternando desplantes con cada paso.",
+        "desplantes con pausa" to "Baja al desplante y aguanta un segundo abajo antes de subir.",
+        "elevación de piernas" to "Acostado boca arriba, sube las piernas rectas hasta el techo y bájalas sin tocar el piso.",
+        "elevación de talones" to "De pie, sube los talones despacio hasta pararte de puntas y baja controlado.",
+        "elevación de talones parado" to "Sube de puntas y baja despacio, cuantas veces puedas.",
+        "escaladores" to "En posición de plancha, lleva las rodillas al pecho alternando rápido, como si corrieras horizontal.",
+        "escaladores continuos" to "Los mismos escaladores pero sin parar, manteniendo un ritmo parejo.",
+        "estiramiento de cuello lento" to "Inclina la cabeza suave hacia un hombro, aguanta, y luego hacia el otro lado.",
+        "estiramiento de cuádriceps de pie" to "De pie, jala un tobillo hacia el glúteo con la mano y sostén el equilibrio.",
+        "estiramiento de espalda sentado" to "Sentado, inclínate hacia adelante con la espalda relajada, dejando que cuelgue el peso.",
+        "estiramiento de isquiotibiales" to "Con una pierna extendida al frente, inclínate hacia esa pierna sin forzar la rodilla.",
+        "estiramiento de muñecas y dedos" to "Extiende un brazo al frente y jala los dedos hacia atrás suavemente con la otra mano.",
+        "estiramiento de psoas en desplante" to "En desplante bajo, empuja la cadera hacia adelante sintiendo el estiramiento en la pierna de atrás.",
+        "estiramiento de cadera" to "En desplante bajo, empuja la cadera hacia adelante sintiendo el estiramiento en la pierna de atrás.",
+        "estiramiento largo hacia el techo" to "Estira ambos brazos hacia arriba y alárgate como si quisieras tocar el techo.",
+        "extensión de brazos al frente" to "Extiende los brazos al frente a la altura del pecho y sostenlos firmes.",
+        "fondos de tríceps en silla" to "Manos en el borde de una silla, baja el cuerpo doblando los codos y sube.",
+        "fondos de tríceps lentos" to "El mismo fondo de tríceps, pero bajando y subiendo despacio y con control.",
+        "gato y vaca en cuatro puntos" to "En cuatro puntos, arquea la espalda hacia arriba y luego hunde el ombligo hacia el piso.",
+        "giro ruso sentado" to "Sentado con el torso inclinado atrás, gira de un lado a otro tocando el piso con las manos.",
+        "golpes al aire" to "Da golpes al aire alternando los brazos, como si estuvieras boxeando.",
+        "hueco abdominal sostenido" to "Acostado boca arriba, despega ligeramente hombros y piernas del piso y aguanta la posición.",
+        "lagartija parado de manos" to "Con los pies apoyados en la pared, baja la cabeza hacia el piso y empuja para subir.",
+        "lagartijas abiertas" to "Manos más separadas que los hombros, baja el pecho al piso y empuja para subir.",
+        "lagartijas con pausa abajo" to "Baja como en una lagartija normal y aguanta un segundo con el pecho cerca del piso antes de subir.",
+        "lagartijas diamante" to "Junta los pulgares e índices formando un diamante bajo el pecho y haz la lagartija.",
+        "lagartijas inclinadas en pared" to "Manos en la pared, cuerpo inclinado, baja el pecho hacia la pared y empuja para regresar.",
+        "lagartijas lentas" to "Baja y sube controlando cada segundo del movimiento, sin dejarte caer.",
+        "lagartijas normales" to "Manos a la altura de los hombros, baja el pecho casi al piso y empuja para subir.",
+        "lagartijas" to "Manos a la altura de los hombros, baja el pecho casi al piso y empuja para subir.",
+        "marcha en el lugar" to "Camina sin avanzar, subiendo bien las rodillas, a tu propio ritmo.",
+        "patada de glúteo en cuatro puntos" to "En cuatro puntos, empuja un talón hacia el techo apretando el glúteo, y cambia de pierna.",
+        "plancha alta" to "Apoyado en manos y puntas de pie, cuerpo recto como tabla, aguanta la posición.",
+        "plancha alta con desplazamiento" to "Desde plancha alta, camina las manos hacia un lado y luego hacia el otro.",
+        "plancha con elevación de pierna" to "En plancha, levanta una pierna recta sin mover la cadera, y cambia de lado.",
+        "plancha con toque de hombro" to "En plancha alta, toca el hombro contrario con una mano sin mover la cadera, alternando.",
+        "plancha firme" to "Apoyado en antebrazos y pies, cuerpo recto, aprieta abdomen y glúteo y aguanta.",
+        "plancha frontal" to "Apoyado en antebrazos, cuerpo en línea recta de cabeza a talones, aguanta sin hundir la cadera.",
+        "plancha lateral alternada" to "Plancha de lado apoyado en un antebrazo, y cambia de lado a la mitad del tiempo.",
+        "plancha sostenida" to "Aguanta la posición de plancha lo más quieto y firme que puedas.",
+        "plancha" to "Apoyado en antebrazos y pies, cuerpo recto, aguanta la posición sin hundir la cadera.",
+        "postura del niño" to "De rodillas, siéntate sobre los talones y estira los brazos al frente, relajando la espalda.",
+        "puente de glúteo" to "Acostado boca arriba, rodillas dobladas, sube la cadera apretando el glúteo y baja.",
+        "puente de glúteo a una pierna" to "Igual que el puente, pero con una pierna estirada en el aire, alternando lado.",
+        "puente de glúteo sostenido" to "Sube la cadera como en el puente y aguanta arriba apretando el glúteo.",
+        "puente suave de espalda" to "Sube la cadera despacio y sin forzar, sintiendo cómo se estira la espalda baja.",
+        "respiración profunda con brazos arriba" to "Sube los brazos mientras inhalas profundo, y bájalos despacio mientras exhalas.",
+        "respiración rápida de pie" to "De pie, inhala y exhala rápido y fuerte varias veces para activar el cuerpo.",
+        "retracción de escápulas" to "De pie o sentado, junta los omóplatos hacia atrás como si sostuvieras un lápiz entre ellos.",
+        "rodillas al pecho corriendo" to "Corre en tu lugar subiendo las rodillas lo más alto que puedas hacia el pecho.",
+        "rotación de cadera de pie" to "De pie, gira la cadera en círculos, la mitad del tiempo para cada lado.",
+        "rotación de columna sentado" to "Sentado con la espalda recta, gira el torso hacia un lado sosteniendo, y luego hacia el otro.",
+        "rotación de hombros" to "Rueda los hombros hacia atrás en círculos amplios y lentos.",
+        "rotación de tobillos" to "Levanta un pie y gira el tobillo en círculos, luego cambia de pie.",
+        "sacudida de brazos y piernas" to "Sacude brazos y piernas sueltos, como para relajar los músculos entre esfuerzos.",
+        "saltos de rana" to "Baja a sentadilla profunda y salta hacia adelante como rana, aterrizando suave.",
+        "sentadilla búlgara en silla" to "Un pie apoyado atrás en una silla, baja con la otra pierna al frente y sube.",
+        "sentadilla isométrica en pared" to "Espalda pegada a la pared, baja como si te sentaras y aguanta ahí quieto.",
+        "sentadilla profunda sostenida" to "Baja a sentadilla lo más profundo que puedas y quédate ahí sin moverte.",
+        "sentadilla sumo" to "Pies bien separados y apuntando afuera, baja como sentadilla normal pero más ancho.",
+        "sentadilla sumo con salto" to "La sentadilla sumo, pero al subir das un pequeño salto.",
+        "sentadillas" to "Pies al ancho de los hombros, baja como si te sentaras en una silla y sube.",
+        "sentadillas a la silla sin peso" to "Baja hasta casi tocar una silla con los glúteos y sube sin sentarte del todo.",
+        "sentadillas con impulso" to "Baja a sentadilla y sube con un poco de impulso, sin llegar a saltar.",
+        "sentadillas con salto" to "Baja a sentadilla y sube saltando, aterrizando suave para la siguiente repetición.",
+        "sentadillas continuas" to "Sentadillas seguidas sin pausa, manteniendo un ritmo constante.",
+        "sentadillas profundas" to "Baja lo más que puedas, más abajo que una sentadilla normal, y sube controlado.",
+        "sentadillas rápidas" to "Sentadillas normales pero a ritmo rápido, sin perder la forma.",
+        "sombra de boxeo" to "Da golpes al aire moviéndote como si estuvieras boxeando contra alguien.",
+        "superman acostado" to "Boca abajo, levanta brazos y piernas al mismo tiempo como si volaras, y baja.",
+        "tijeras acostado" to "Acostado, piernas rectas un poco levantadas, ábrelas y ciérralas como tijeras.",
+        "trote en el lugar" to "Trota sin avanzar, a tu propio ritmo, moviendo bien los brazos.",
+        "posición de caballo" to "Pies separados, rodillas dobladas como si montaras a caballo, espalda recta, aguanta la posición."
+    )
+
+    fun explicacionDe(nombre: String): String = explicaciones[nombre.trim().lowercase()] ?: ""
 
     // ------------------------------------------------------------------ rutinas
 
@@ -175,6 +277,22 @@ object Plantillas {
                 "No pido cosas aisladas, pido la transformación completa de mi vida en la dirección que deseo. En lugar de pedir simplemente dinero, pido una vida de abundancia: financiera, pero también salud, creatividad y propósito que se refuerzan mutuamente. Ya que estoy transformando mi vida, lo hago completamente, y los cambios resultan más duraderos.",
                 "Las peticiones más irresistibles son las que benefician no solo a mí, sino a la red más amplia. Cuando pido desde una motivación de servicio, trasciendo el ego personal y accedo a fuerzas de apoyo, oportunidades y sincronismos reservados para lo que beneficia a otros. No niego mis necesidades: reconozco el vínculo entre mi bien personal y el bienestar del todo.",
                 "No soy un mendigo del universo pidiendo favores: soy una expresión de la conciencia explorando sus propias posibilidades infinitas. La verdadera maestría no está en obtener siempre lo que quiero, sino en querer siempre lo que recibo. Y muchas veces solo estaba esperando recordar cómo pedir."
+            )
+        ),
+
+        Paquete(
+            "Grabovoi — combo de ventas",
+            "Las ocho secuencias numéricas del combo de ventas, tal cual se dicen, para repetir seguidas.",
+            listOf(
+                "Combo Grabovoi para aumentar las ventas. Ocho secuencias numéricas, en este orden. " +
+                    "Primera secuencia, conexión con el creador: 11981. " +
+                    "Segunda secuencia, atraer circunstancias favorables: 419. 488. 71. " +
+                    "Tercera secuencia, abundancia y prosperidad: 71427321893. " +
+                    "Cuarta secuencia, aumentar ventas: 54121381948. " +
+                    "Quinta secuencia, eliminar obstáculos: 91688. " +
+                    "Sexta secuencia, resultados rápidos: 741. " +
+                    "Séptima secuencia, protección divina: 8888. " +
+                    "Octava y última secuencia, todo es posible: 519. 7148."
             )
         ),
 

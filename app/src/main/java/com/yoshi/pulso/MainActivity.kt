@@ -11,6 +11,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.speech.tts.TextToSpeech
+import android.speech.tts.Voice
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chkSegundo: CheckBox
     private lateinit var chkDiez: CheckBox
     private lateinit var chkVibrar: CheckBox
+    private lateinit var txtVoz: TextView
     private lateinit var listaBloques: LinearLayout
     private lateinit var listaFrases: LinearLayout
     private lateinit var btnEmpezar: Button
@@ -49,6 +52,9 @@ class MainActivity : AppCompatActivity() {
     private var indiceAudio = -1
     private var perfilesEnPantalla = listOf<Perfil>()
     private var armandoSpinner = false
+
+    private var tts: TextToSpeech? = null
+    private var ttsListo = false
 
     private val reloj = Handler(Looper.getMainLooper())
 
@@ -85,10 +91,18 @@ class MainActivity : AppCompatActivity() {
         chkSegundo = findViewById(R.id.chkSegundo)
         chkDiez = findViewById(R.id.chkDiez)
         chkVibrar = findViewById(R.id.chkVibrar)
+        txtVoz = findViewById(R.id.txtVoz)
         listaBloques = findViewById(R.id.listaBloques)
         listaFrases = findViewById(R.id.listaFrases)
         btnEmpezar = findViewById(R.id.btnEmpezar)
         spPerfil = findViewById(R.id.spPerfil)
+
+        tts = TextToSpeech(this) { estado ->
+            if (estado == TextToSpeech.SUCCESS) {
+                ttsListo = true
+                runOnUiThread { actualizarTxtVoz() }
+            }
+        }
 
         armarSpinner()
         cargarPerfil()
@@ -108,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnGuardarLista).setOnClickListener { guardarListaPropia() }
         findViewById<Button>(R.id.btnCargarLista).setOnClickListener { abrirMisListas() }
         findViewById<Button>(R.id.btnPaquete).setOnClickListener { elegirPaquete() }
+        findViewById<Button>(R.id.btnVoz).setOnClickListener { elegirVoz() }
         findViewById<Button>(R.id.btnAgregarFrase).setOnClickListener {
             recogerTextosDeFrases()
             frases.add(Frase("f" + System.currentTimeMillis(), "", null))
@@ -133,6 +148,11 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         reloj.removeCallbacksAndMessages(null)
         guardar(false)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try { tts?.shutdown() } catch (e: Exception) { }
     }
 
     private val refresco = object : Runnable {
@@ -181,6 +201,7 @@ class MainActivity : AppCompatActivity() {
         frases = ArrayList(Config.frases(this))
         pintarBloques()
         pintarFrases()
+        actualizarTxtVoz()
         txtDesglose.text = Config.desgloseHoy(this)
     }
 
@@ -274,6 +295,103 @@ class MainActivity : AppCompatActivity() {
         Config.guardarFrases(this, frases)
         pintarFrases()
         aviso(paq.nombre + " listo")
+    }
+
+    // ---------------------------------------------------------------- voz
+
+    private fun elegirVoz() {
+        val t = tts
+        if (t == null || !ttsListo) {
+            aviso("Espera un segundo, cargando las voces del teléfono…")
+            return
+        }
+
+        val todas = try { t.voices } catch (e: Exception) { null }
+        if (todas == null) {
+            aviso("No se pudieron leer las voces de este teléfono")
+            return
+        }
+
+        // Todas las voces en español del teléfono (locales y de red), para que
+        // aparezcan al menos varias opciones si el teléfono las tiene. Primero
+        // las latinoamericanas, España al final, y dentro de cada grupo,
+        // primero las que no necesitan internet.
+        var disponibles = todas.filter { it.locale?.language == "es" }
+            .sortedWith(
+                compareBy(
+                    { it.locale?.country == "ES" },
+                    { it.isNetworkConnectionRequired },
+                    { it.locale?.country ?: "" },
+                    { it.name }
+                )
+            )
+
+        if (disponibles.isEmpty()) {
+            aviso("Este teléfono no tiene voces en español instaladas")
+            return
+        }
+
+        val opciones = ArrayList<String>()
+        opciones.add("Automática (recomendada)")
+        for (v in disponibles) opciones.add(nombreAmigable(v))
+
+        val actual = Config.vozElegida(this)
+        val marcada = disponibles.indexOfFirst { it.name == actual } + 1 // -1+1=0 si es automática
+
+        AlertDialog.Builder(this)
+            .setTitle("Elegir voz")
+            .setSingleChoiceItems(opciones.toTypedArray(), marcada) { _, i ->
+                if (i == 0) {
+                    Config.guardarVoz(this, null)
+                    try { t.voice = t.defaultVoice } catch (e: Exception) { }
+                    actualizarTxtVoz()
+                    aviso("Voz automática")
+                } else {
+                    val v = disponibles[i - 1]
+                    Config.guardarVoz(this, v.name)
+                    actualizarTxtVoz()
+                    try {
+                        t.voice = v
+                        t.speak("Así vas a escuchar los avisos de Pulso.", TextToSpeech.QUEUE_FLUSH, null, "prueba_voz")
+                    } catch (e: Exception) { }
+                }
+            }
+            .setPositiveButton("Listo", null)
+            .show()
+    }
+
+    private fun nombreAmigable(v: Voice): String {
+        val loc = v.locale
+        val pais = when (loc?.country) {
+            "MX" -> "México"
+            "ES" -> "España"
+            "US" -> "Estados Unidos"
+            "AR" -> "Argentina"
+            "CO" -> "Colombia"
+            "CL" -> "Chile"
+            "PE" -> "Perú"
+            "VE" -> "Venezuela"
+            "419" -> "Latinoamérica"
+            else -> loc?.displayCountry ?: ""
+        }
+        val calidad = when {
+            v.quality >= Voice.QUALITY_VERY_HIGH -> "muy alta calidad"
+            v.quality >= Voice.QUALITY_HIGH -> "alta calidad"
+            v.quality >= Voice.QUALITY_NORMAL -> "calidad normal"
+            else -> "calidad baja"
+        }
+        val red = if (v.isNetworkConnectionRequired) " · necesita internet" else ""
+        return "Español" + (if (pais.isNotBlank()) " ($pais)" else "") + " · " + calidad + red
+    }
+
+    private fun actualizarTxtVoz() {
+        val guardada = Config.vozElegida(this)
+        if (guardada == null) {
+            txtVoz.text = "Voz actual: automática"
+            return
+        }
+        val v = try { tts?.voices?.firstOrNull { it.name == guardada } } catch (e: Exception) { null }
+        txtVoz.text = "Voz actual: " + (if (v != null) nombreAmigable(v) else "elegida (esta ya no está instalada)")
     }
 
     // ---------------------------------------------------------------- mis listas

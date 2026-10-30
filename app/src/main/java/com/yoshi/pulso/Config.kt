@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class Ejercicio(val nombre: String, val seg: Int)
+data class Ejercicio(val nombre: String, val seg: Int, val explicacion: String = "")
 data class Bloque(val nombre: String, val ejs: List<Ejercicio>)
 data class Frase(val id: String, val texto: String, val audio: String?)
 data class Perfil(val id: String, val nombre: String)
@@ -113,7 +113,7 @@ object Config {
         val lista = perfiles(c)
         if (lista.size <= 1) return false
         val ed = p(c).edit()
-        for (clave in listOf("bloques", "frases", "avisoFrases", "cuentaSegundo", "avisoDiez", "vibrar", "descansoSeg")) {
+        for (clave in listOf("bloques", "frases", "avisoFrases", "cuentaSegundo", "avisoDiez", "vibrar", "descansoSeg", "voz")) {
             ed.remove(id + "__" + clave)
         }
         ed.apply()
@@ -133,6 +133,15 @@ object Config {
     fun vibrar(c: Context) = p(c).getBoolean(k(c, "vibrar"), true)
     fun descansoSeg(c: Context) = p(c).getInt(k(c, "descansoSeg"), DESCANSO_DEFECTO)
 
+    /** Voz elegida para este perfil (el nombre interno de la voz de Android). Null = automática. */
+    fun vozElegida(c: Context): String? = p(c).getString(k(c, "voz"), null)
+
+    fun guardarVoz(c: Context, nombreVoz: String?) {
+        val ed = p(c).edit()
+        if (nombreVoz == null) ed.remove(k(c, "voz")) else ed.putString(k(c, "voz"), nombreVoz)
+        ed.apply()
+    }
+
     fun guardarNumeros(c: Context, aviso: Int, seg: Boolean, diez: Boolean, vib: Boolean, descanso: Int) {
         p(c).edit()
             .putInt(k(c, "avisoFrases"), if (aviso > 0) aviso else 4)
@@ -150,32 +159,34 @@ object Config {
      * Con 15 segundos de descanso entre ellos, cinco ejercicios de 45
      * llenan exactamente los cinco minutos del bloque (5 × 60 = 300).
      */
+    private fun ej(nombre: String): Ejercicio = Ejercicio(nombre, 45, Plantillas.explicacionDe(nombre))
+
     private fun bloquesPorDefecto(): List<Bloque> = listOf(
         Bloque(
             "Bloque 1", listOf(
-                Ejercicio("Sentadillas", 45),
-                Ejercicio("Lagartijas", 45),
-                Ejercicio("Plancha", 45),
-                Ejercicio("Desplantes alternados", 45),
-                Ejercicio("Estiramiento de cadera", 45)
+                ej("Sentadillas"),
+                ej("Lagartijas"),
+                ej("Plancha"),
+                ej("Desplantes alternados"),
+                ej("Estiramiento de cadera")
             )
         ),
         Bloque(
             "Bloque 2", listOf(
-                Ejercicio("Burpees", 45),
-                Ejercicio("Brincos altos", 45),
-                Ejercicio("Posición de caballo", 45),
-                Ejercicio("Escaladores", 45),
-                Ejercicio("Sombra de boxeo", 45)
+                ej("Burpees"),
+                ej("Brincos altos"),
+                ej("Posición de caballo"),
+                ej("Escaladores"),
+                ej("Sombra de boxeo")
             )
         ),
         Bloque(
             "Bloque 3", listOf(
-                Ejercicio("Lagartija parado de manos", 45),
-                Ejercicio("Saltos de rana", 45),
-                Ejercicio("Abdominales con los pies", 45),
-                Ejercicio("Giro ruso sentado", 45),
-                Ejercicio("Plancha lateral alternada", 45)
+                ej("Lagartija parado de manos"),
+                ej("Saltos de rana"),
+                ej("Abdominales con los pies"),
+                ej("Giro ruso sentado"),
+                ej("Plancha lateral alternada")
             )
         )
     )
@@ -191,7 +202,10 @@ object Config {
                 val ejs = ArrayList<Ejercicio>()
                 for (j in 0 until ejsArr.length()) {
                     val e = ejsArr.getJSONObject(j)
-                    ejs.add(Ejercicio(e.getString("n"), e.getInt("s")))
+                    val nombreEj = e.getString("n")
+                    val expGuardada = e.optString("e", "")
+                    val exp = expGuardada.ifBlank { Plantillas.explicacionDe(nombreEj) }
+                    ejs.add(Ejercicio(nombreEj, e.getInt("s"), exp))
                 }
                 if (ejs.isNotEmpty()) out.add(Bloque(o.getString("nombre"), ejs))
             }
@@ -211,6 +225,7 @@ object Config {
                 val eo = JSONObject()
                 eo.put("n", e.nombre)
                 eo.put("s", e.seg)
+                eo.put("e", e.explicacion)
                 ejs.put(eo)
             }
             o.put("ejs", ejs)
@@ -220,17 +235,21 @@ object Config {
     }
 
     fun textoDeBloque(b: Bloque): String =
-        b.ejs.joinToString("\n") { it.nombre + " | " + it.seg }
+        b.ejs.joinToString("\n") {
+            it.nombre + " | " + it.seg + (if (it.explicacion.isNotBlank()) " | " + it.explicacion else "")
+        }
 
     fun bloqueDeTexto(nombre: String, texto: String): Bloque {
         val ejs = texto.split("\n")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .map { linea ->
-                val partes = linea.split("|")
+                val partes = linea.split("|", limit = 3)
                 val n = if (partes[0].trim().isEmpty()) "Movimiento" else partes[0].trim()
                 val s = if (partes.size > 1) partes[1].trim().toIntOrNull() ?: 45 else 45
-                Ejercicio(n, if (s > 0) s else 45)
+                val escrita = if (partes.size > 2) partes[2].trim() else ""
+                val exp = if (escrita.isNotBlank()) escrita else Plantillas.explicacionDe(n)
+                Ejercicio(n, if (s > 0) s else 45, exp)
             }
         return Bloque(nombre, if (ejs.isEmpty()) listOf(Ejercicio("Movimiento", 45)) else ejs)
     }
